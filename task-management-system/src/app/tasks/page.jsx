@@ -26,7 +26,6 @@ function Page() {
     description: "",
     priority: "",
     deadline: "",
-    assigned: "",
   })
   const Priority = ["High", "Medium ", "Low"]
     let router = useRouter();
@@ -74,19 +73,6 @@ function Page() {
         }))
       }
     } 
-    // else if (fieldName === "assigned") {
-    //   if (!fieldValue) {
-    //     setFieldValidation((prev) => ({
-    //       ...prev,
-    //       assigned: "Assign user is required"
-    //     }))
-    //   } else {
-    //     setFieldValidation((prev) => ({
-    //       ...prev,
-    //       assigned: ""
-    //     }))
-    //   }
-    // } 
     else if (fieldName === "description") {
       if (!fieldValue) {
         setFieldValidation((prev) => ({
@@ -143,9 +129,7 @@ function Page() {
 
   const getUsers = async () => {
     const response = await axiosClient().get(USERS)
-    if (response?.status === 200) {
-      console.log("response?.data?.data", response?.data?.data, userId);
-      
+    if (response?.status === 200) {      
       setUsers(response?.data?.data.filter(data=> data.id !== userId))
     }
   }
@@ -173,13 +157,12 @@ function Page() {
       dataToSend.append("task_files[]", file)
     })
 
-    if(!formData.title || !formData.priority || !formData.deadline || !formData.assigned) {
+    if(!formData.title || !formData.priority || !formData.deadline) {
       setFieldValidation((prev)=> ({
         ...prev,
         title: !formData.title ? "Title is required" : "",
         priority: !formData.priority ? "Priority is required" : "",
         deadline: !formData.deadline ? "Deadline date is required" : "",
-        // assigned: !formData.assigned ? "Assign user is required" : "",
         description: !formData.description ? "Description is required" : "",
       }))
       return;
@@ -196,18 +179,10 @@ function Page() {
       setModal(null)
 
       if (response?.status === 200) {
-        const res = await axiosClient().post(TASK_ASSIGN, {
-          assigned_to: formData.assigned,
-          task_id: response?.data?.data?.id,
-        })
-
-        if (res?.status === 200) {
-          toast.success("Task is created and assigned successfully.")
-          getTasks()
-          resetFormAndFiles()
-        } else {
-          toast.error(res?.data?.message || "Task assignment failed.")
-        }
+        toast.success("Task is created successfully.")
+        getTasks()
+        resetFormAndFiles()
+      
       } else {
         toast.error(response?.data?.message || "Task creation failed.")
       }
@@ -256,13 +231,12 @@ function Page() {
 
     dataToSend.append("_method", "PUT");
 
-    if(!formData.title || !formData.priority || !formData.deadline || !formData.assigned) {
+    if(!formData.title || !formData.priority || !formData.deadline) {
       setFieldValidation((prev)=> ({
         ...prev,
         title: !formData.title ? "Title is required" : "",
         priority: !formData.priority ? "Priority is required" : "",
         deadline: !formData.deadline ? "Deadline date is required" : "",
-        // assigned: !formData.assigned ? "Assign user is required" : "",
         description: !formData.description ? "Description is required" : "",
       }))
       return;
@@ -278,23 +252,9 @@ function Page() {
       setModal(null)
 
       if (response?.status === 200) {
-        if (formData.assigned) {
-          const res = await axiosClient().post(TASK_ASSIGN, {
-            assigned_to: formData.assigned,
-            task_id: taskId,
-          })
-          if (res?.status === 200) {
-            toast.success(response?.data?.message)
-            getTasks()
-            resetFormAndFiles()
-          } else {
-            toast.error(res?.data?.message || "Task assignment update failed.")
-          }
-        } else {
-          toast.success(response?.data?.message)
-          getTasks()
-          resetFormAndFiles()
-        }
+        toast.success(response?.data?.message)
+        getTasks()
+        resetFormAndFiles()
       } else {
         toast.error(response?.data?.message || "Task update failed.")
       }
@@ -327,18 +287,6 @@ function Page() {
       toast.error('Error in loading task list')
     }
     
-  }
-
-  const assignTask = async () => {
-    const response = await axiosClient().post(TASK_ASSIGN, {
-      assigned_to: userId,
-      task_id: taskId,
-    })
-    setModal(null)
-    if (response?.status === 200) {
-      toast.success(response?.data?.message)
-      getTasks()
-    }
   }
 
   const removeTask = async (id) => {
@@ -490,18 +438,6 @@ function Page() {
             {fieldValidation.deadline ? <span className="error-message">{fieldValidation.deadline}</span> : <></>}
           </div>
           <div>
-            <label className="form-label">Assign User *</label>
-            <select className="form-input" name="assigned" onChange={handleInput} value={formData.assigned || ""}>
-              <option value="">Select User</option>
-              {users.map((value, i) => (
-                <option key={i} value={value.id}>
-                  {value?.name}
-                </option>
-              ))}
-            </select>
-            {fieldValidation.assigned ? <span className="error-message">{fieldValidation.assigned}</span> : <></>}
-          </div>
-          <div>
             <label className="form-label">Task Priority *</label>
             <select className="form-input" name="priority" onChange={handleInput} value={formData.priority || ""}>
               <option value="">Select Priority</option>
@@ -614,18 +550,6 @@ function Page() {
             />
               {fieldValidation.deadline ? <span className="error-message">{fieldValidation.deadline}</span> : <></>}
           </div>
-          {/* <div>
-            <label className="form-label">Assign User *</label>
-            <select className="form-input" name="assigned" onChange={handleInput} value={formData.assigned || ""}>
-              <option value="">Select User</option>
-              {users.map((value, i) => (
-                <option key={i} value={value.id}>
-                  {value?.name}
-                </option>
-              ))}
-            </select>
-               {fieldValidation.assigned ? <span className="error-message">{fieldValidation.assigned}</span> : <></>}
-          </div> */}
           <div>
             <label className="form-label">Task Priority *</label>
             <select className="form-input" name="priority" onChange={handleInput} value={formData.priority || ""}>
@@ -762,18 +686,6 @@ function Page() {
             />
               {fieldValidation.deadline ? <span className="error-message">{fieldValidation.deadline}</span> : <></>}
           </div>
-          {/* <div>
-            <label className="form-label">Assign User *</label>
-            <select className="form-input" name="assigned" value={formData.assigned || ""}   disabled={true}>
-              <option value="">Select User</option>
-              {users.map((value, i) => (
-                <option key={i} value={value.id}>
-                  {value?.name}
-                </option>
-              ))}
-            </select>
-               {fieldValidation.assigned ? <span className="error-message">{fieldValidation.assigned}</span> : <></>}
-          </div> */}
           <div>
             <label className="form-label">Task Priority *</label>
             <select className="form-input" name="priority" value={formData.priority || ""} disabled={true}>
@@ -918,8 +830,7 @@ function Page() {
             </tr>
               ) : tasks?.map((task, key) => {
               const attachments = JSON.parse(task?.attachments || "[]")
-              const assignedUsers = task?.assigned?.map((user) => user?.user?.name).join(", ") || "N/A"
-              const priority = priorityMap[task?.priority] || "low"
+             const priority = priorityMap[task?.priority] || "low"
 
               return (
                 <tr key={task.id || key} className="tasks-table-row">
@@ -974,7 +885,6 @@ function Page() {
                             title: task?.title,
                             description: task?.description,
                             deadline: task?.deadline?.slice(0, 16),
-                            assigned: task?.assigned[0]?.user?.id || "",
                             priority: task?.priority || "",
                           })
                           setExistingFiles(attachments)
@@ -1005,7 +915,6 @@ function Page() {
                             title: task?.title,
                             description: task?.description,
                             deadline: task?.deadline?.slice(0, 16),
-                            assigned: task?.assigned[0]?.user?.id || "",
                             priority: task?.priority || "",
                           })
                           setExistingFiles(attachments)
